@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我们的时光 · 恋爱时间线</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%92%97</text></svg>" />
+</head>
+<body class="page-timeline">
+  <div class="ambient" aria-hidden="true">
+    <span class="glow glow-a"></span>
+    <span class="glow glow-b"></span>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="/">
+      <span class="brand-heart">&#10084;</span>
+      <span class="brand-text">
+        <strong>我们的时光</strong>
+        <small>Our Timeline</small>
+      </span>
+    </a>
+    <div class="header-actions">
+      <span class="user-chip" id="userChip" hidden></span>
+      <button class="icon-btn" id="openSettingsBtn" type="button" title="修改密码" hidden>设置</button>
+      <button class="icon-btn ghost" id="logoutBtn" type="button" hidden>退出</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="intro">
+      <p class="eyebrow">Chapter of us</p>
+      <h1>把每一个瞬间，<br />都留在时间里</h1>
+      <p class="intro-sub">照片、视频与点滴记录，构成属于我们两个人的故事线。</p>
+      <div class="intro-stats">
+        <div class="stat">
+          <strong id="statPosts">0</strong>
+          <span>段回忆</span>
+        </div>
+        <div class="stat">
+          <strong id="statMedia">0</strong>
+          <span>份珍藏</span>
+        </div>
+        <div class="stat">
+          <strong id="statDays">0</strong>
+          <span>天相伴</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="compose" id="composeSection">
+      <button class="compose-toggle" id="composeToggle" type="button">
+        <span class="plus">+</span>
+        <span>记录新的回忆</span>
+      </button>
+      <form class="compose-form" id="createForm" hidden>
+        <div class="field-row">
+          <label class="field">
+            <span>标题</span>
+            <input type="text" name="title" maxlength="120" placeholder="例如：第一次一起看海" required />
+          </label>
+          <label class="field">
+            <span>日期</span>
+            <input type="date" name="eventDate" required />
+          </label>
+        </div>
+        <label class="field">
+          <span>想说的话</span>
+          <textarea name="content" rows="3" maxlength="5000" placeholder="那天的心情、天气、说过的话……"></textarea>
+        </label>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" name="files" multiple hidden />
+          <div class="dropzone-inner">
+            <span class="drop-icon">&#8681;</span>
+            <p><strong>点击选择文件</strong> 或拖拽到这里</p>
+            <small>支持图片、视频、音频和文档，单个文件最大 200MB，一次最多 10 个</small>
+          </div>
+          <ul class="file-list" id="fileList"></ul>
+        </div>
+        <div class="compose-footer">
+          <p class="form-msg" id="createMsg" role="status"></p>
+          <button class="primary-btn" type="submit" id="createSubmit">保存这段回忆</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="timeline-section">
+      <div class="timeline-head">
+        <h2>时间线</h2>
+        <div class="timeline-tools">
+          <div class="segmented" id="filterBar" role="tablist" aria-label="筛选">
+            <button class="seg is-active" data-filter="all" type="button">全部</button>
+            <button class="seg" data-filter="image" type="button">照片</button>
+            <button class="seg" data-filter="video" type="button">视频</button>
+            <button class="seg" data-filter="file" type="button">文件</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline" id="timeline"></div>
+      <div class="empty-state" id="emptyState" hidden>
+        <div class="empty-heart">&#10084;</div>
+        <p>还没有回忆，写下第一段故事吧。</p>
+      </div>
+      <div class="load-more-wrap">
+        <button class="ghost-btn" id="loadMoreBtn" type="button" hidden>加载更多</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="关闭">&times;</button>
+    <button class="lightbox-nav prev" id="lightboxPrev" type="button" aria-label="上一张">&#8249;</button>
+    <figure class="lightbox-body" id="lightboxBody"></figure>
+    <button class="lightbox-nav next" id="lightboxNext" type="button" aria-label="下一张">&#8250;</button>
+  </div>
+
+  <dialog class="modal" id="editModal">
+    <form method="dialog" class="modal-inner" id="editForm">
+      <h3>编辑这段回忆</h3>
+      <div class="field-row">
+        <label class="field">
+          <span>标题</span>
+          <input type="text" name="title" maxlength="120" required />
+        </label>
+        <label class="field">
+          <span>日期</span>
+          <input type="date" name="eventDate" required />
+        </label>
+      </div>
+      <label class="field">
+        <span>想说的话</span>
+        <textarea name="content" rows="4" maxlength="5000"></textarea>
+      </label>
+      <p class="modal-hint">如需追加文件，可在保存后上传，或先删除旧文件。</p>
+      <p class="form-msg" id="editMsg" role="status"></p>
+      <div class="modal-actions">
+        <button class="ghost-btn" value="cancel" type="button" id="editCancel">取消</button>
+        <button class="primary-btn" value="save" type="submit">保存修改</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="settingsModal">
+    <form method="dialog" class="modal-inner" id="settingsForm">
+      <h3>修改密码</h3>
+      <label class="field">
+        <span>当前密码</span>
+        <input type="password" name="currentPassword" autocomplete="current-password" required />
+      </label>
+      <label class="field">
+        <span>新密码（至少 6 位）</span>
+        <input type="password" name="newPassword" autocomplete="new-password" minlength="6" required />
+      </label>
+      <p class="form-msg" id="settingsMsg" role="status"></p>
+      <div class="modal-actions">
+        <button class="ghost-btn" value="cancel" type="button" id="settingsCancel">取消</button>
+        <button class="primary-btn" value="save" type="submit">更新密码</button>
+      </div>
+    </form>
+  </dialog>
+
+  <template id="postTemplate">
+    <article class="post">
+      <div class="post-marker"><span></span></div>
+      <div class="post-card">
+        <header class="post-head">
+          <div class="post-date">
+            <strong class="date-day"></strong>
+            <span class="date-rest"></span>
+          </div>
+          <div class="post-actions">
+            <button class="mini-btn edit" type="button" data-action="edit">编辑</button>
+            <button class="mini-btn danger" type="button" data-action="delete">删除</button>
+          </div>
+        </header>
+        <h3 class="post-title"></h3>
+        <p class="post-content"></p>
+        <div class="post-media"></div>
+        <footer class="post-foot">
+          <span class="post-author"></span>
+          <span class="post-count"></span>
+        </footer>
+      </div>
+    </article>
+  </template>
+
+  <script src="/js/app.js" defer></script>
+</body>
+</html>

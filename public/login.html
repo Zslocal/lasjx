@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 · 我们的时光</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%92%97</text></svg>" />
+</head>
+<body class="page-login">
+  <div class="ambient" aria-hidden="true">
+    <span class="glow glow-a"></span>
+    <span class="glow glow-b"></span>
+    <span class="glow glow-c"></span>
+  </div>
+
+  <main class="login-wrap">
+    <section class="login-card">
+      <div class="login-brand">
+        <span class="brand-heart">&#10084;</span>
+        <p class="eyebrow">Our Timeline</p>
+        <h1>我们的时光</h1>
+        <p class="login-sub">登录后继续记录属于我们的故事</p>
+      </div>
+
+      <form id="loginForm" class="login-form" novalidate>
+        <label class="field">
+          <span>用户名</span>
+          <input type="text" name="username" autocomplete="username" placeholder="请输入用户名" required autofocus />
+        </label>
+        <label class="field">
+          <span>密码</span>
+          <input type="password" name="password" autocomplete="current-password" placeholder="请输入密码" required />
+        </label>
+        <p class="form-msg" id="loginMsg" role="alert"></p>
+        <button class="primary-btn full" type="submit" id="loginSubmit">进入时间线</button>
+      </form>
+
+      <p class="login-tip">默认账号：couple / couple123（普通用户）<br />admin / admin123（管理员）</p>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('loginForm')
+    const msg = document.getElementById('loginMsg')
+    const btn = document.getElementById('loginSubmit')
+
+    fetch('/api/me')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.user) location.replace('/')
+      })
+      .catch(() => {})
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      msg.textContent = ''
+      msg.classList.remove('ok')
+      const body = {
+        username: form.username.value.trim(),
+        password: form.password.value,
+      }
+      if (!body.username || !body.password) {
+        msg.textContent = '请输入用户名和密码'
+        return
+      }
+      btn.disabled = true
+      btn.textContent = '正在登录…'
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.error || '登录失败')
+        location.replace('/')
+      } catch (error) {
+        msg.textContent = error.message
+        btn.disabled = false
+        btn.textContent = '进入时间线'
+      }
+    })
+  </script>
+</body>
+</html>
